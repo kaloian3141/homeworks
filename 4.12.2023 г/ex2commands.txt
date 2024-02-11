@@ -1,0 +1,1 @@
+gcc -S ex2.c -o ex2_assembly.s

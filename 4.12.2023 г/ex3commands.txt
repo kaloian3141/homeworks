@@ -1,0 +1,3 @@
+gcc -c transformation.c -o transformation.o
+gcc ex3_transformation.c transformation.o -o ex3_transformation.exe
+./ex3_transformation.exe
