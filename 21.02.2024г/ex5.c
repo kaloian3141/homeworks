@@ -11,7 +11,7 @@ void bubblesort(int arr[], int arlen, int (*compare)(void *, void *), void (*swa
     for (int i = 1; i < arlen; i++) {
         ok = 1;
         for (int j = 0; j < arlen - i; j++) {
-            if (compare(&arr[j], &arr[j + 1]) > 0) {
+            if (compare(&arr[j], &arr[j + 1]) == 1) {
                 swapelements(&arr[j], &arr[j + 1]);
                 ok = 0;
             }
