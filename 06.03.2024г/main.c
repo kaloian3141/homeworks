@@ -34,10 +34,6 @@ int main(void)
     }
     while (1)
     {
-        for(int i=0; i<n; i++)
-        {  
-         printf("grade[%d] = %f\n",i+1,grades[i]);
-        }
         printf("\nMenu:\n");
         printf("1.Print average success\n");
         printf("2.Add new grade\n");
