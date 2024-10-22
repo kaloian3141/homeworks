@@ -20,7 +20,7 @@ void insertBegin(LList* l, int val);
 int popEnd(LList* list);
 int popBegin(LList* l);
 Node* getAt(LList* l, int i);
-
+int getSize(LList * list);
 void printList(LList *l);
 void clear(LList* l);
 void freeList(LList* l);

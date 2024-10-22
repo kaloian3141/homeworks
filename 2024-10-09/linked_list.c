@@ -132,3 +132,14 @@ void freeList(LList* l) {
     clear(l);
     free(l);
 }
+int getSize(LList * list)
+{   int n = 0;
+    Node *i = list->head;
+
+    while (i != NULL) {
+
+        i = i->next;
+        n++;
+    }
+    return n;
+}
