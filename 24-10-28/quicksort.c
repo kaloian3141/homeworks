@@ -39,37 +39,26 @@ void quickSortR(int *arr, int l, int r) {
         return;
     }    
     int pivot = partition(arr, l, r);
-    quickSortR(arr, l, pivot);   
+    printArray(arr, 10);
+
+    quickSortR(arr, l, pivot-1);   
     quickSortR(arr, pivot + 1, r);  
+
     
 }
 
 int partition(int *arr, int l, int r) {
-    int pivot = arr[l]; 
-    int i = l - 1,j = r + 1;
-        while(1)
+    int pp = l;
+    int pivot = arr[r];
+    for(int i = l;i<r; i++)
+    {
+        if(arr[i]<pivot)
         {
-            do
-            {
-                i++;
-            }
-            while(arr[i]<pivot);
-            
-            do
-            {
-                j--;
-            }
-            while(arr[j]>pivot);
-                
-            if(i >= j)
-            {
-              return j;
-            }
+            swap(&arr[i], &arr[pp]);
+            pp++;
+        }                               
+    }  
+    swap(&arr[r], &arr[pp]); 
+    return pp;  
 
-            swap(&arr[i], &arr[j]);
-        }
-        return j;
-    
-
-    
 }

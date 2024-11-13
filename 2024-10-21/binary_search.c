@@ -11,7 +11,7 @@ int main()
     int arr[10] = {10,9,8,7,6,5,4,3,2,1};
     int size = 10;
     printf("\n %d",binary_search(arr, size, 10));
-    printf("\n %d",binary_search_recurtion(arr, size, 6));
+    printf("\n %d",binary_search_recurtion(arr, size, 60));
     return 0;
 }
 
