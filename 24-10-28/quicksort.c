@@ -1,64 +1,47 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-void swap(int *a, int *b);
-void printArray(int *arr, int size);
-void quickSort(int *arr, int size);
-void quickSortR(int *arr, int l, int r);
-int partition(int *arr, int l, int r);
+void quicksort(int * arr);
+void quicksortR(int * arr, int l, int r);
+int partition(int * arr, int l, int r);
+void swap(int a, int b);
 
-int main() {
-    int arr[10] = {2,5,1,6,4,8,4,10,3,1 };
-    int size = sizeof(arr) / sizeof(arr[0]);
-    printArray(arr, size);
-    quickSort(arr, size);
-    printArray(arr, size);
+int main()
+{
+    int arr[8] = {8,7,6,5,4,3,2,1};
+    quicksort(arr);
+    for(int i = 0; i<=8; i++ )
+    {
+        printf("arr[%d] = %d", i+1, arr[i]);
+    }
     return 0;
 }
 
-void swap(int *a, int *b) {
-    int c = *a;
-    *a = *b;
-    *b = c;
+void quicksort(int * arr)
+{
+    int size = sizeof(arr)/sizeof(arr[0]);
+    quicksortR(arr, 0, size-1);
 }
 
-void printArray(int *arr, int size) {
-    for (int i = 0; i < size; i++) {
-        printf("%d ", arr[i]);
-    }
-    printf("\n");
-}
-
-void quickSort(int *arr, int size) {
-    int l = 0, r = size - 1;
-    quickSortR(arr, l, r);
-}
-
-void quickSortR(int *arr, int l, int r) {
-    if (l >= r) 
+void quicksortR(int * arr, int l, int r)
+{
+    if(l >= r)
     {
         return;
-    }    
+    }
     int pivot = partition(arr, l, r);
-    printArray(arr, 10);
-
-    quickSortR(arr, l, pivot-1);   
-    quickSortR(arr, pivot + 1, r);  
-
-    
+    quicksort(arr, 0, pivot-1);
+    quicksort(arr, pivot+1, r);
+}
+int partition(int * arr, int l, int r)
+{
+    int pivot = r;
+        
 }
 
-int partition(int *arr, int l, int r) {
-    int pp = l;
-    int pivot = arr[r];
-    for(int i = l;i<r; i++)
-    {
-        if(arr[i]<pivot)
-        {
-            swap(&arr[i], &arr[pp]);
-            pp++;
-        }                               
-    }  
-    swap(&arr[r], &arr[pp]); 
-    return pp;  
-
+void swap(int a, int b)
+{
+    int c = a;
+    a = b;
+    b = c;
 }
