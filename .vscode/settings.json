@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "stdio.h": "c",
-        "dialogs.h": "c"
+        "dialogs.h": "c",
+        "vector": "c",
+        "xstring": "c"
     }
 }
