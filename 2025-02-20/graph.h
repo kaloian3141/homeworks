@@ -1,6 +1,6 @@
 #ifndef GRAPH_H
 #define GRAPH_H
-
+#include "../utils/vector.h"
 typedef struct Graph {
     int numVertices;
     int **adjMatrix;

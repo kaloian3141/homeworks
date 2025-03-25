@@ -3,6 +3,7 @@
         "stdio.h": "c",
         "dialogs.h": "c",
         "vector": "c",
-        "xstring": "c"
+        "xstring": "c",
+        "queue.h": "c"
     }
 }

@@ -22,8 +22,18 @@ Graph* init_graph(int numVertices) {
 
 void addEdgeDirectional(Graph*graph, int from, int to, int weight) {
     Vertex* new_vertex = init_vertex(to, weight);
-    new_vertex->next = graph->adjList[from];
-    graph->adjList[from] = new_vertex;
+    Vertex* it = graph->adjList[from];
+    if(it == NULL)
+    {
+        graph->adjList[from] = new_vertex;  
+        return;
+    }
+    while(it->next != NULL)
+    {
+        it = it->next;
+    }
+   
+    it->next = new_vertex;
 }
 
 void addEdge(Graph* graph, int from, int to, int weight) {

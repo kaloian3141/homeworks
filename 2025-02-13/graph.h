@@ -16,6 +16,5 @@ Graph* init_graph(int numVertices);
 void addEdgeDirectional(Graph*graph, int from, int to);
 void addEdge(Graph* graph, int from, int to);
 void printGraph(Graph *graph);
-void BFS(Graph * g);
 
 #endif
