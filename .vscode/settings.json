@@ -4,6 +4,7 @@
         "dialogs.h": "c",
         "vector": "c",
         "xstring": "c",
-        "queue.h": "c"
+        "queue.h": "c",
+        "vector.h": "c"
     }
 }
