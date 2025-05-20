@@ -5,6 +5,8 @@
         "vector": "c",
         "xstring": "c",
         "queue.h": "c",
-        "vector.h": "c"
+        "vector.h": "c",
+        "pqueue.h": "c",
+        "stdlib.h": "c"
     }
 }
