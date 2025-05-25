@@ -13,46 +13,14 @@ typedef struct Agent
 
 Agent * init_agent(char name, int * pos, char destination, int * destination_pos);
 Agent ** get_agents(char ** grid, int row_size, int col_size, int numb_of_agents);
-int ** A_star(char ** grid, int row_size, int col_size, Agent * agent, int * steps);
+int ** A_star(char ** grid, int row_size, int col_size, Agent * agent, int * steps, Agent ** agents, int numb_of_agents);
 int h(int x, int y, int nx, int ny);
 int ** get_path(int *** parent, int * start, int * end, int steps);
-
+int is_agent(Agent ** agents, int numb_of_agents, int x, int y);
+void tests();
 int main()
 {
-    char * grid[] = {
-        "    A  B  C  D",
-        "              ",
-        "#### ##### ###",
-        "              ",
-        "####### ######",
-        "              ",
-        "   1  2  3   4"
-    };
-    int row_size = strlen(grid[0]);
-    int col_size = sizeof(grid) / sizeof(grid[0]);
-    int numb_of_agents = 4;
-    Agent ** agents = get_agents(grid, row_size, col_size, numb_of_agents);
-    for(int i = 0; i < numb_of_agents; i++)
-    {
-        printf("Agent %c from (%d,%d) to %c at (%d,%d):\n", 
-            agents[i]->agent_name, agents[i]->agent_pos[0], agents[i]->agent_pos[1], 
-            agents[i]->destination, agents[i]->destination_pos[0], agents[i]->destination_pos[1]);
-        int steps = 0;
-        int ** path = A_star(grid, row_size, col_size, agents[i], &steps);
-        if(path == NULL)
-        {
-            printf("there is no path from %c to %c\n", agents[i]->agent_name, agents[i]->destination);
-        }
-        else
-        {
-            for(int step = 0; step <= steps; step++)
-            {
-                printf("  Step %d: (%d,%d)\n", step, path[step][0], path[step][1]);
-            }
-
-        }
-    }
-
+    tests();
 }
 
 //инициализация на един агент
@@ -116,7 +84,7 @@ int h(int x, int y, int nx, int ny)
 }
 
 // А* алгоритъм който търси и връща минималния път от агент до дестинация
-int ** A_star(char ** grid, int row_size, int col_size, Agent * agent, int * steps)
+int ** A_star(char ** grid, int row_size, int col_size, Agent * agent, int * steps, Agent ** agents, int numb_of_agents)
 {
     int start[2] = {agent->agent_pos[0], agent->agent_pos[1]};
     int end[2] = {agent->destination_pos[0], agent->destination_pos[1]};
@@ -167,7 +135,7 @@ int ** A_star(char ** grid, int row_size, int col_size, Agent * agent, int * ste
                 int neibours[2] = {current_pos[0] + directions[d][0], current_pos[1] + directions[d][1]};
                 if(neibours[0] >= 0 && neibours[0] < col_size && neibours[1] >= 0 && neibours[1] < row_size)
                 {
-                    if(!visited[neibours[0]][neibours[1]] && grid[neibours[0]][neibours[1]] != '#')
+                    if(!visited[neibours[0]][neibours[1]] && grid[neibours[0]][neibours[1]] != '#' && !is_agent(agents, numb_of_agents, neibours[0], neibours[1]))
                     {
                         int new_g = g[current_pos[0]][current_pos[1]] + 1;
                         int new_h = h(neibours[0], neibours[1], end[0], end[1]);
@@ -193,12 +161,11 @@ int ** A_star(char ** grid, int row_size, int col_size, Agent * agent, int * ste
     }
     
     *steps = g[end[0]][end[1]];
-    int steps_1 = g[end[0]][end[1]];
     int ** path = NULL;
     if(found)
     {
         
-        path = get_path(parent, start ,end, steps_1);
+        path = get_path(parent, start ,end, *steps);
     }
 
     for(int i = 0; i < col_size; i++)
@@ -244,4 +211,55 @@ int ** get_path(int *** parent, int * start, int * end, int steps)
     return path;
 }
 
+//проверява дали в дадена позиция има агент
+int is_agent(Agent ** agents, int numb_of_agents, int x, int y)
+{
+    for(int i = 0; i < numb_of_agents; i++)
+    {
+        if(agents[i]->agent_pos[0] == x && agents[i]->agent_pos[1] == y)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
+
+
+//тестваме отделни части от програмата
+void tests()
+{
+    char * grid[] = {
+        "    A  B  C  D",
+        "              ",
+        "#### ##### ###",
+        "              ",
+        "####### ######",
+        "       2      ",
+        "   1     3   4"
+    };
+    int row_size = strlen(grid[0]);
+    int col_size = sizeof(grid) / sizeof(grid[0]);
+    int numb_of_agents = 4;
+    Agent ** agents = get_agents(grid, row_size, col_size, numb_of_agents);
+    for(int i = 0; i < numb_of_agents; i++)
+        {
+            printf("Agent %c from (%d,%d) to %c at (%d,%d):\n", 
+                agents[i]->agent_name, agents[i]->agent_pos[0], agents[i]->agent_pos[1], 
+                agents[i]->destination, agents[i]->destination_pos[0], agents[i]->destination_pos[1]);
+            int steps = 0;
+            int ** path = A_star(grid, row_size, col_size, agents[i], &steps, agents, numb_of_agents);
+            if(path == NULL)
+            {
+                printf("there is no path from %c to %c\n", agents[i]->agent_name, agents[i]->destination);
+            }
+            else
+            {
+                for(int step = 0; step <= steps; step++)
+                {
+                    printf("  Step %d: (%d,%d)\n", step, path[step][0], path[step][1]);
+                }
+
+            }
+        }
+}
