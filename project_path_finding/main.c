@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include"pqueue.h"
-
+#include<windows.h>
 typedef struct Agent
 {
     char agent_name;
@@ -13,11 +13,18 @@ typedef struct Agent
 
 Agent * init_agent(char name, int * pos, char destination, int * destination_pos);
 Agent ** get_agents(char ** grid, int row_size, int col_size, int numb_of_agents);
-int ** A_star(char ** grid, int row_size, int col_size, Agent * agent, int * steps, Agent ** agents, int numb_of_agents);
+int ** A_star(char ** grid, int row_size, int col_size, Agent * agent,
+                int * steps, Agent ** agents, int numb_of_agents, int path_with_agents);
 int h(int x, int y, int nx, int ny);
 int ** get_path(int *** parent, int * start, int * end, int steps);
 int is_agent(Agent ** agents, int numb_of_agents, int x, int y);
+int are_agents_in_destinations(Agent ** agents, int numb_of_agents);
+int is_agent_in_destination(Agent * agent);
+void print_grid(char ** grid, int row_size, int col_size);
+void move_agents(char ** grid, int row_size, int col_size, Agent ** agents, int numb_of_agents);
+void move_agent(char ** grid, int row_size, int col_size, Agent * agent, int ** path, char symbol_under_agent);
 void tests();
+
 int main()
 {
     tests();
@@ -84,7 +91,8 @@ int h(int x, int y, int nx, int ny)
 }
 
 // А* алгоритъм който търси и връща минималния път от агент до дестинация
-int ** A_star(char ** grid, int row_size, int col_size, Agent * agent, int * steps, Agent ** agents, int numb_of_agents)
+int ** A_star(char ** grid, int row_size, int col_size, Agent * agent, 
+                int * steps, Agent ** agents, int numb_of_agents, int path_with_agents)
 {
     int start[2] = {agent->agent_pos[0], agent->agent_pos[1]};
     int end[2] = {agent->destination_pos[0], agent->destination_pos[1]};
@@ -135,22 +143,25 @@ int ** A_star(char ** grid, int row_size, int col_size, Agent * agent, int * ste
                 int neibours[2] = {current_pos[0] + directions[d][0], current_pos[1] + directions[d][1]};
                 if(neibours[0] >= 0 && neibours[0] < col_size && neibours[1] >= 0 && neibours[1] < row_size)
                 {
-                    if(!visited[neibours[0]][neibours[1]] && grid[neibours[0]][neibours[1]] != '#' && !is_agent(agents, numb_of_agents, neibours[0], neibours[1]))
+                    if(!visited[neibours[0]][neibours[1]] && grid[neibours[0]][neibours[1]] != '#')
                     {
-                        int new_g = g[current_pos[0]][current_pos[1]] + 1;
-                        int new_h = h(neibours[0], neibours[1], end[0], end[1]);
-                        int new_f = new_h + new_g;
-                        
-                        if(new_g < g[neibours[0]][neibours[1]])
+                        if(path_with_agents == 0 || (path_with_agents == 1 && !is_agent(agents, numb_of_agents, neibours[0], neibours[1])))
                         {
-                            g[neibours[0]][neibours[1]] = new_g;
-                            parent[neibours[0]][neibours[1]][0] = current_pos[0];
-                            parent[neibours[0]][neibours[1]][1] = current_pos[1];
+                            int new_g = g[current_pos[0]][current_pos[1]] + 1;
+                            int new_h = h(neibours[0], neibours[1], end[0], end[1]);
+                            int new_f = new_h + new_g;
+                            
+                            if(new_g < g[neibours[0]][neibours[1]])
+                            {
+                                g[neibours[0]][neibours[1]] = new_g;
+                                parent[neibours[0]][neibours[1]][0] = current_pos[0];
+                                parent[neibours[0]][neibours[1]][1] = current_pos[1];
+                            }
+                            int * next = malloc(2 * sizeof(int));
+                            next[0] = neibours[0];
+                            next[1] = neibours[1];
+                            pqInsert(queue, (int*)next, new_f);
                         }
-                        int * next = malloc(2 * sizeof(int));
-                        next[0] = neibours[0];
-                        next[1] = neibours[1];
-                        pqInsert(queue, (int*)next, new_f);
                     }
                 }
             }
@@ -224,22 +235,123 @@ int is_agent(Agent ** agents, int numb_of_agents, int x, int y)
     return 0;
 }
 
+//движим всички агенти с енда стъпка
+void move_agents(char ** grid, int row_size, int col_size, Agent ** agents, int numb_of_agents)
+{   
+    print_grid(grid, row_size, col_size);
+    char * symbol_under_agent = (char*)malloc(sizeof(char) * numb_of_agents);
+    for(int i=0; i<numb_of_agents;i++)
+    {
+        symbol_under_agent[i] = ' ';
+    }
+    while(1)
+    {      
+        
+        if(are_agents_in_destinations(agents, numb_of_agents))
+        {
+            break;
+        }
+        int *** paths = (int***)malloc(sizeof(int**) * numb_of_agents);
+        int  * agents_steps = (int*)calloc(numb_of_agents, sizeof(int));
+        for(int i = 0; i < numb_of_agents; i++)
+        {
+            paths[i] = A_star(grid, row_size, col_size, agents[i], &agents_steps[i], agents, numb_of_agents, 1);
+        }
+        for(int i = 0; i < numb_of_agents; i++)
+        {
 
+            if(!is_agent_in_destination(agents[i]))
+            {
+                if(paths[i] != NULL)
+                {
+                    char tempt = grid[paths[i][1][0]][paths[i][1][1]];
+                    move_agent(grid, row_size, col_size, agents[i], paths[i], symbol_under_agent[i]);
+                    symbol_under_agent[i] = tempt;
+                }
+                else if(paths[i] == NULL)
+                {
+                    paths[i] = A_star(grid, row_size, col_size, agents[i], &agents_steps[i], agents, numb_of_agents, 0);
+                    if(!is_agent(agents, numb_of_agents, paths[i][1][0], paths[i][1][1]))
+                    {
+                        char tempt = grid[paths[i][1][0]][paths[i][1][1]];
+                        move_agent(grid, row_size, col_size, agents[i], paths[i], symbol_under_agent[i]);
+                        symbol_under_agent[i] = tempt;
+                    }
+                    
+                }
+            }
+            system("cls");
+            print_grid(grid, row_size, col_size);
+            Sleep(100);
+    
+        }
+        
+    }
+    free(symbol_under_agent);
+    system("cls");
+    print_grid(grid, row_size, col_size);
+    printf("\n agents arrived at the destinations\n");
+
+}
+
+//движим един агент с една стъпка
+void move_agent(char ** grid, int row_size, int col_size, Agent * agent, int ** path, char symbol_under_agent)
+{
+    int new_pos[2] = {path[1][0], path[1][1]};
+    grid[agent->agent_pos[0]][agent->agent_pos[1]] = symbol_under_agent;
+    grid[new_pos[0]][new_pos[1]] = agent->agent_name;
+    agent->agent_pos[0] = new_pos[0];
+    agent->agent_pos[1] = new_pos[1];
+}
+
+//проверява дали всички агенти са стигнали до дестинацията си
+int are_agents_in_destinations(Agent ** agents, int numb_of_agents)
+{
+    int are_in_destination = 1;
+    for(int i = 0; i < numb_of_agents; i++)
+    {
+        if(!is_agent_in_destination(agents[i]))
+        {
+            are_in_destination = 0;
+        } 
+    }
+    return are_in_destination;
+}
+
+//проверява дали един агент е стигнал до дестинацията си
+int is_agent_in_destination(Agent * agent)
+{
+    return agent->agent_pos[0] == agent->destination_pos[0] && agent->agent_pos[1] == agent->destination_pos[1];
+}
+
+//принтира grid
+void print_grid(char ** grid, int row_size, int col_size)
+{
+    for(int i = 0; i < col_size; i++)
+    {
+        printf("%s\n", grid[i]);
+    }
+}
 
 //тестваме отделни части от програмата
 void tests()
 {
-    char * grid[] = {
-        "    A  B  C  D",
+    char * tempt_grid[] = {
+        "  2           ",
         "              ",
-        "#### ##### ###",
-        "              ",
+        "####1#########", 
+        "  3   4      B",
         "####### ######",
-        "       2      ",
-        "   1     3   4"
+        "  D  A C      "
     };
-    int row_size = strlen(grid[0]);
-    int col_size = sizeof(grid) / sizeof(grid[0]);
+    int row_size = strlen(tempt_grid[0]);
+    int col_size = sizeof(tempt_grid) / sizeof(tempt_grid[0]);
+    char ** grid = (char**)malloc(sizeof(char*) * col_size);
+    for(int i = 0; i < col_size; i++)
+    {
+        grid[i] = strdup(tempt_grid[i]);
+    }
+
     int numb_of_agents = 4;
     Agent ** agents = get_agents(grid, row_size, col_size, numb_of_agents);
     for(int i = 0; i < numb_of_agents; i++)
@@ -248,7 +360,7 @@ void tests()
                 agents[i]->agent_name, agents[i]->agent_pos[0], agents[i]->agent_pos[1], 
                 agents[i]->destination, agents[i]->destination_pos[0], agents[i]->destination_pos[1]);
             int steps = 0;
-            int ** path = A_star(grid, row_size, col_size, agents[i], &steps, agents, numb_of_agents);
+            int ** path = A_star(grid, row_size, col_size, agents[i], &steps, agents, numb_of_agents, 0);
             if(path == NULL)
             {
                 printf("there is no path from %c to %c\n", agents[i]->agent_name, agents[i]->destination);
@@ -262,4 +374,7 @@ void tests()
 
             }
         }
+        move_agents(grid, row_size, col_size, agents, numb_of_agents);
 }
+
+
