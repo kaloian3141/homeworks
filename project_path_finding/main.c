@@ -2,7 +2,12 @@
 #include<stdlib.h>
 #include<string.h>
 #include"pqueue.h"
-#include<windows.h>
+#ifdef _WIN32
+    #include<windows.h>
+#else
+    #include<unistd.h>
+#endif
+
 typedef struct Agent
 {
     char agent_name;
@@ -23,6 +28,8 @@ int is_agent_in_destination(Agent * agent);
 void print_grid(char ** grid, int row_size, int col_size);
 void move_agents(char ** grid, int row_size, int col_size, Agent ** agents, int numb_of_agents);
 void move_agent(char ** grid, int row_size, int col_size, Agent * agent, int ** path, char symbol_under_agent);
+char ** copy_grid(char ** grid, int row_size, int col_size);
+int are_grid_same(char ** grid, char ** prev_grid, int row_size, int col_size);
 void tests();
 
 int main()
@@ -245,8 +252,8 @@ void move_agents(char ** grid, int row_size, int col_size, Agent ** agents, int 
         symbol_under_agent[i] = ' ';
     }
     while(1)
-    {      
-        
+    {
+       char ** prev_grid = copy_grid(grid, row_size, col_size); 
         if(are_agents_in_destinations(agents, numb_of_agents))
         {
             break;
@@ -267,10 +274,23 @@ void move_agents(char ** grid, int row_size, int col_size, Agent ** agents, int 
                     char tempt = grid[paths[i][1][0]][paths[i][1][1]];
                     move_agent(grid, row_size, col_size, agents[i], paths[i], symbol_under_agent[i]);
                     symbol_under_agent[i] = tempt;
+                    
                 }
                 else if(paths[i] == NULL)
                 {
                     paths[i] = A_star(grid, row_size, col_size, agents[i], &agents_steps[i], agents, numb_of_agents, 0);
+                    if(paths[i] == NULL)
+                    {
+                        printf("no path from %c to %c\n", agents[i]->agent_name, agents[i]->destination);
+                        free(symbol_under_agent);
+                        free(symbol_under_agent);
+                        for(int i = 0; i < col_size; i++)
+                        {
+                            free(prev_grid[i]);
+                        }
+                        free(prev_grid);
+                        return;
+                    }
                     if(!is_agent(agents, numb_of_agents, paths[i][1][0], paths[i][1][1]))
                     {
                         char tempt = grid[paths[i][1][0]][paths[i][1][1]];
@@ -279,13 +299,28 @@ void move_agents(char ** grid, int row_size, int col_size, Agent ** agents, int 
                     }
                     
                 }
-            }
+            
             system("cls");
             print_grid(grid, row_size, col_size);
-            Sleep(100);
-    
+            #ifdef _WIN32
+                Sleep(100); 
+            #else
+                sleep(0.1);
+            #endif
+            }
         }
-        
+
+        if(are_grid_same(grid, prev_grid, row_size, col_size))
+        {
+            printf("Agents are blocking each other\n");
+            free(symbol_under_agent);
+            for(int i = 0; i < col_size; i++)
+            {
+                free(prev_grid[i]);
+            }
+            free(prev_grid);
+            return;
+        }
     }
     free(symbol_under_agent);
     system("cls");
@@ -302,6 +337,34 @@ void move_agent(char ** grid, int row_size, int col_size, Agent * agent, int ** 
     grid[new_pos[0]][new_pos[1]] = agent->agent_name;
     agent->agent_pos[0] = new_pos[0];
     agent->agent_pos[1] = new_pos[1];
+}
+
+//прави точно копие на даден grid
+char ** copy_grid(char ** grid, int row_size, int col_size)
+{
+    char ** new_grid = (char**)malloc(sizeof(char*) * col_size);
+    for(int i = 0; i < col_size; i++)
+    {
+        new_grid[i] = strdup(grid[i]);
+    }
+    return new_grid;
+}
+
+//проверява дали има изменение в даден grid
+int are_grid_same(char ** grid, char ** prev_grid, int row_size, int col_size)
+{
+    int are_same = 1;
+    for(int i = 0; i < col_size; i++)
+    {
+        for(int j = 0; j < row_size; j++)
+        {
+            if(grid[i][j] != prev_grid[i][j])
+            {
+                are_same = 0;
+            }
+        }
+    }
+    return are_same;
 }
 
 //проверява дали всички агенти са стигнали до дестинацията си
@@ -337,12 +400,13 @@ void print_grid(char ** grid, int row_size, int col_size)
 void tests()
 {
     char * tempt_grid[] = {
-        "  2           ",
-        "              ",
-        "####1#########", 
-        "  3   4      B",
-        "####### ######",
-        "  D  A C      "
+        "   B  A       ",
+        "   E        12",
+        "#######4######", 
+        "C       3    D",
+        "#### #########",
+        "   # #        ",
+        " 5            "
     };
     int row_size = strlen(tempt_grid[0]);
     int col_size = sizeof(tempt_grid) / sizeof(tempt_grid[0]);
@@ -352,7 +416,7 @@ void tests()
         grid[i] = strdup(tempt_grid[i]);
     }
 
-    int numb_of_agents = 4;
+    int numb_of_agents = 5;
     Agent ** agents = get_agents(grid, row_size, col_size, numb_of_agents);
     for(int i = 0; i < numb_of_agents; i++)
         {
@@ -371,10 +435,24 @@ void tests()
                 {
                     printf("  Step %d: (%d,%d)\n", step, path[step][0], path[step][1]);
                 }
-
             }
+            for(int j = 0; j < steps; j++)
+            {
+                free(path[j]);
+            }
+            free(path);
         }
-        move_agents(grid, row_size, col_size, agents, numb_of_agents);
+    move_agents(grid, row_size, col_size, agents, numb_of_agents);
+    for(int i = 0; i < col_size; i++)
+    {
+        free(grid[i]);
+    }
+    free(grid);
+    for(int i = 0; i < numb_of_agents; i++)
+    {
+        free(agents[i]);
+    }
+    free(agents);
 }
 
 
