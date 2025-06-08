@@ -11,7 +11,7 @@ typedef struct Stack
 {
     StackNode *top;
 } Stack;
-
+StackNode* create_node(void *val);
 Stack *init_stack();
 void push(Stack *stack, int val);
 int pop(Stack *stack);

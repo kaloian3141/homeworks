@@ -432,7 +432,7 @@ void A_star(char ** grid, int row_size, int col_size)
                     {
                         int new_g = g[current_pos[0]][current_pos[1]] + 1;
                         int new_h = h(neibours[0], neibours[1], end[0], end[1]);
-                        int new_f = new_h + new_g;
+                        
                         
                         if(new_g < g[neibours[0]][neibours[1]])
                         {
@@ -440,6 +440,7 @@ void A_star(char ** grid, int row_size, int col_size)
                             parent[neibours[0]][neibours[1]][0] = current_pos[0];
                             parent[neibours[0]][neibours[1]][1] = current_pos[1];
                         }
+                        int new_f = new_h + new_g;
                         int * next = malloc(2 * sizeof(int));
                         next[0] = neibours[0];
                         next[1] = neibours[1];
@@ -501,7 +502,6 @@ void A_star(char ** grid, int row_size, int col_size)
         free(parent[i]);
     }
     free(g);
-    free(start_pos);
     free(visited);
     free(parent);
 }
