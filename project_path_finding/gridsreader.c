@@ -59,13 +59,15 @@ char ** read_one_grid_from_file(FILE * fp)
         {
             char * grid_line = (char*)malloc(sizeof(char) * strlen(line));
             int index = 0;
-            for (int i = 0; line[i] != '\0'; i++) 
+            for(int i = 1; line[i] != '\0'; i++) 
             {
-                if(line[i] != '|')
+                if(line[i] == '|')
                 {
-                    grid_line[index] = line[i];
-                    index++;
+                    break;
                 }
+                grid_line[index] = line[i];
+                index++;
+                
             }
             grid_line[index] = '\0';
             free(line);
@@ -127,7 +129,7 @@ char *** read_grids_from_file(char * file_name)
     return grids;   
 }
 
-//Взимаме размера на един grid(col_size) и премахваме терминиращото NULL
+//Взимаме размера на един grid(col_size)
 int get_grid_size(char ** grid)
 {
     int size = 0;
@@ -135,11 +137,10 @@ int get_grid_size(char ** grid)
     {
 
     }
-    grid = (char**)realloc(grid, sizeof(char*) * size);
     return size;
 }
 
-//Взимаме броя на grids и премахваме терминиращото NULL
+//Взимаме броя на grids
 int get_grids_count(char *** grids)
 {
     int size = 0;
@@ -147,7 +148,6 @@ int get_grids_count(char *** grids)
     {
 
     }
-    grids = (char***)realloc(grids, sizeof(char**) * size);
     return size;
 }
 

@@ -394,10 +394,22 @@ int get_numb_of_agents(char ** grid, int row_size, int col_size)
 //принтира grid
 void print_grid(char ** grid, int row_size, int col_size)
 {
+    printf("-");
+    for(int i = 0; i < row_size; i++)
+    {
+        printf("-");
+    }
+    printf("-\n");
     for(int i = 0; i < col_size; i++)
     {
-        printf("%s\n", grid[i]);
+        printf("|%s|\n", grid[i]);
     }
+    printf("-");
+    for(int i = 0; i < row_size; i++)
+    {
+        printf("-");
+    }
+    printf("-\n");
 }
 
 
